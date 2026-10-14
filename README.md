@@ -9,11 +9,11 @@ Prototipo interactivo para la gestión y re-categorización dinámica de pacient
 
 ## 👥 Equipo de Trabajo (Grupo 8)
 
-* Darwin
-* Javier
-* Ricardo
-* DIyer
-* Mateo
+* Darwin Campoverde
+* Javier Guarnizo
+* Ricardo Ochoa
+* Diyer Torres
+* Mateo Yanangomez
 
 ---
 
@@ -51,5 +51,5 @@ Sigue este tutorial para ejecutar el proyecto de forma local o desplegarlo en la
 
 1. **Clonar el repositorio:**
    ```bash
-   git clone [https://github.com/TU_USUARIO/triaje-hospital-isidro-ayora.git](https://github.com/TU_USUARIO/triaje-hospital-isidro-ayora.git)
+   git clone [https://github.com/TheJavier37/triaje-hospital-isidro-ayora.git](https://github.com/TU_USUARIO/triaje-hospital-isidro-ayora.git)
    cd triaje-hospital-isidro-ayora
