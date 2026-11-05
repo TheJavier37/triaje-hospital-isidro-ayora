@@ -20,9 +20,9 @@ export class MaxHeap {
   public peek(): Patient | null {
     return this.isEmpty() ? null : this.heap[0];
   }
-
+  
   public getPatients(): Patient[] {
-    return [...this.heap];
+  return [...this.heap].sort((a, b) => b.priorityScore - a.priorityScore);
   }
 
   public insert(patient: Patient): void {
