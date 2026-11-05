@@ -5,6 +5,8 @@ import type { Patient, ReorderAlert, VitalSigns, EsiLevel } from '../types/triag
 import { MaxHeap } from '../structures/MaxHeap';
 import { LinkedList } from '../structures/LinkedList';
 import { calculatePriorityScore } from '../utils/esiCalculator';
+import { validatePatientData, validateVitalSigns } from '../utils/vitalSignsValidation';
+import type { ValidationResult } from '../utils/vitalSignsValidation';
 
 export function useTriageSystem() {
   const maxHeapRef = useRef<MaxHeap>(new MaxHeap());
@@ -42,13 +44,22 @@ export function useTriageSystem() {
     esiLevel: EsiLevel,
     vitalSigns: VitalSigns,
     id: string
-  ) => {
+  ): ValidationResult => {
+    // Validación defensiva: aunque el formulario ya valida, el hook nunca acepta datos imposibles.
+    const result = validatePatientData({ fullName, id, age, esiLevel, vitalSigns });
+    const cleanId = id.trim();
+
+    if (result.isValid && maxHeapRef.current.getPatients().some((p) => p.id === cleanId)) {
+      return { isValid: false, errors: { id: 'Ya existe un paciente en espera con esa cédula / ID' } };
+    }
+    if (!result.isValid) return result;
+
     const arrivalTime = new Date();
     const priorityScore = calculatePriorityScore(esiLevel, vitalSigns, arrivalTime);
 
     const newPatient: Patient = {
-      id,
-      fullName,
+      id: cleanId,
+      fullName: fullName.trim(),
       age,
       esiLevel,
       vitalSigns,
@@ -59,11 +70,15 @@ export function useTriageSystem() {
 
     maxHeapRef.current.insert(newPatient);
     syncQueueState();
+    return result;
   }, [syncQueueState]);
 
-  const updatePatientVitals = useCallback((patientId: string, newVitals: VitalSigns) => {
+  const updatePatientVitals = useCallback((patientId: string, newVitals: VitalSigns): ValidationResult => {
+    const result = validateVitalSigns(newVitals);
+    if (!result.isValid) return result;
+
     const patient = maxHeapRef.current.getPatients().find(p => p.id === patientId);
-    if (!patient) return;
+    if (!patient) return { isValid: false, errors: { id: 'El paciente ya no está en la cola de espera' } };
 
     const updatedAt = new Date();
     const newScore = calculatePriorityScore(patient.esiLevel, newVitals, patient.arrivalTime);
@@ -77,6 +92,7 @@ export function useTriageSystem() {
     }
 
     syncQueueState();
+    return result;
   }, [syncQueueState]);
 
   const attendNextPatient = useCallback(() => {

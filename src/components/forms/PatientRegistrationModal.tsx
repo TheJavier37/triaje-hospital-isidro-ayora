@@ -2,6 +2,15 @@
 
 import React, { useState } from 'react';
 import type { EsiLevel, VitalSigns } from '../../types/triage';
+import { VitalSignsFields } from './VitalSignsFields';
+import type { VitalSignsText } from './VitalSignsFields';
+import {
+  AGE_LIMIT,
+  VITAL_SIGN_KEYS,
+  parseNumericInput,
+  validatePatientData,
+} from '../../utils/vitalSignsValidation';
+import type { FormErrors, ValidationResult, VitalSignKey } from '../../utils/vitalSignsValidation';
 
 interface PatientRegistrationModalProps {
   isOpen: boolean;
@@ -12,8 +21,22 @@ interface PatientRegistrationModalProps {
     esiLevel: EsiLevel,
     vitalSigns: VitalSigns,
     id: string
-  ) => void;
+  ) => ValidationResult;
 }
+
+const DEFAULT_VITALS: VitalSignsText = {
+  heartRate: '80',
+  saturation: '98',
+  systolicBP: '120',
+  diastolicBP: '80',
+  temperature: '36.5',
+  respiratoryRate: '16',
+};
+
+const inputClass = (hasError: boolean) =>
+  `w-full border rounded-lg p-2.5 text-sm focus:ring-2 outline-none ${
+    hasError ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-indigo-500'
+  }`;
 
 export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> = ({
   isOpen,
@@ -22,46 +45,75 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
 }) => {
   const [fullName, setFullName] = useState('');
   const [id, setId] = useState('');
-  const [age, setAge] = useState(30);
+  const [age, setAge] = useState('30');
   const [esiLevel, setEsiLevel] = useState<EsiLevel>(3);
-
-  const [vitals, setVitals] = useState<VitalSigns>({
-    heartRate: 80,
-    saturation: 98,
-    systolicBP: 120,
-    diastolicBP: 80,
-    temperature: 36.5,
-    respiratoryRate: 16,
-  });
+  const [vitals, setVitals] = useState<VitalSignsText>(DEFAULT_VITALS);
+  const [errors, setErrors] = useState<FormErrors>({});
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!fullName || !id) return;
+  const clearError = (field: keyof FormErrors) => setErrors((prev) => ({ ...prev, [field]: undefined }));
 
-    onRegister(fullName, Number(age), esiLevel, vitals, id);
-    onClose();
+  const handleVitalChange = (key: VitalSignKey, value: string) => {
+    setVitals((prev) => ({ ...prev, [key]: value }));
+    clearError(key);
+  };
+
+  const resetForm = () => {
     setFullName('');
     setId('');
+    setAge('30');
+    setEsiLevel(3);
+    setVitals(DEFAULT_VITALS);
+    setErrors({});
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const vitalSigns = Object.fromEntries(
+      VITAL_SIGN_KEYS.map((key) => [key, parseNumericInput(vitals[key])])
+    ) as unknown as VitalSigns;
+    const numericAge = parseNumericInput(age);
+
+    const validation = validatePatientData({ fullName, id, age: numericAge, esiLevel, vitalSigns });
+    if (!validation.isValid) {
+      setErrors(validation.errors);
+      return;
+    }
+
+    // El hook vuelve a validar (y detecta, por ejemplo, una cédula repetida en la cola).
+    const result = onRegister(fullName.trim(), numericAge, esiLevel, vitalSigns, id.trim());
+    if (!result.isValid) {
+      setErrors(result.errors);
+      return;
+    }
+
+    handleClose();
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 max-h-[90vh] overflow-y-auto">
         <h3 className="text-xl font-bold text-gray-800 mb-4">Ingreso de Nuevo Paciente</h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Nombre Completo</label>
             <input
               type="text"
-              required
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+              onChange={(e) => { setFullName(e.target.value); clearError('fullName'); }}
+              className={inputClass(!!errors.fullName)}
               placeholder="Ej: Juan Pérez"
+              aria-invalid={!!errors.fullName}
             />
+            {errors.fullName && <p className="text-[11px] text-red-600 mt-1">{errors.fullName}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -69,22 +121,32 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Cédula / ID</label>
               <input
                 type="text"
-                required
                 value={id}
-                onChange={(e) => setId(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                onChange={(e) => { setId(e.target.value); clearError('id'); }}
+                className={inputClass(!!errors.id)}
                 placeholder="110XXXXXXX"
+                aria-invalid={!!errors.id}
               />
+              {errors.id && <p className="text-[11px] text-red-600 mt-1">{errors.id}</p>}
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Edad</label>
               <input
                 type="number"
+                inputMode="numeric"
+                min={AGE_LIMIT.min}
+                max={AGE_LIMIT.max}
+                step={1}
                 value={age}
-                onChange={(e) => setAge(Number(e.target.value))}
-                className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                onKeyDown={(e) => {
+                  if (['-', '+', 'e', 'E', '.'].includes(e.key)) e.preventDefault();
+                }}
+                onChange={(e) => { setAge(e.target.value); clearError('age'); }}
+                className={inputClass(!!errors.age)}
+                aria-invalid={!!errors.age}
               />
+              {errors.age && <p className="text-[11px] text-red-600 mt-1">{errors.age}</p>}
             </div>
           </div>
 
@@ -105,42 +167,13 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
 
           <div className="border-t pt-3">
             <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">Signos Vitales Iniciales</h4>
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <label className="text-[10px] text-gray-500 font-bold block">F.C. (bpm)</label>
-                <input
-                  type="number"
-                  value={vitals.heartRate}
-                  onChange={(e) => setVitals({ ...vitals, heartRate: Number(e.target.value) })}
-                  className="w-full border rounded p-1 text-sm"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] text-gray-500 font-bold block">SpO2 (%)</label>
-                <input
-                  type="number"
-                  value={vitals.saturation}
-                  onChange={(e) => setVitals({ ...vitals, saturation: Number(e.target.value) })}
-                  className="w-full border rounded p-1 text-sm"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] text-gray-500 font-bold block">Temp (°C)</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={vitals.temperature}
-                  onChange={(e) => setVitals({ ...vitals, temperature: Number(e.target.value) })}
-                  className="w-full border rounded p-1 text-sm"
-                />
-              </div>
-            </div>
+            <VitalSignsFields values={vitals} errors={errors} onChange={handleVitalChange} />
           </div>
 
           <div className="flex justify-end gap-2 pt-4 border-t">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 transition"
             >
               Cancelar
