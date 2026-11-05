@@ -20,6 +20,7 @@ export interface Patient {
   priorityScore: number;    // Score dinámico calculado para el Max-Heap
   arrivalTime: Date;        // Hora de ingreso
   lastUpdated: Date;        // Última actualización de signos vitales
+  attendedAt?: Date;        // Hora de atención (opcional, si ya fue atendido)
 }
 
 export interface ReorderAlert {

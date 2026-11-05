@@ -79,17 +79,19 @@ export function useTriageSystem() {
     syncQueueState();
   }, [syncQueueState]);
 
-  const attendNextPatient = useCallback(() => {
-    const attendedPatient = maxHeapRef.current.extractMax();
-    if (!attendedPatient) return null;
+const attendNextPatient = useCallback(() => {
+  const attendedPatient = maxHeapRef.current.extractMax();
+  if (!attendedPatient) return null;
 
-    historyListRef.current.append(attendedPatient);
+  // Asignar el timestamp de atención
+  attendedPatient.attendedAt = new Date();
 
-    setAttendedHistory(historyListRef.current.toArray());
-    syncQueueState();
+  historyListRef.current.append(attendedPatient);
+  setAttendedHistory(historyListRef.current.toArray());
+  syncQueueState();
 
-    return attendedPatient;
-  }, [syncQueueState]);
+  return attendedPatient;
+}, [syncQueueState]);
 
   const clearAlerts = useCallback(() => {
     setAlerts([]);
