@@ -38,7 +38,17 @@ describe('Pruebas de Tiempo de Ejecución (Benchmarking)', () => {
 
         // 2. Re-evaluación y Reordenamiento
         const t1 = performance.now();
-        heap.updatePatientPriority('PAC-50', 1500, new Date());
+        const patientToUpdate = heap.toArray().find(
+        patient => patient.id === 'PAC-50'
+        );
+
+        if (patientToUpdate) {
+        heap.updatePatientPriority(
+            'PAC-50',
+            1500,
+            patientToUpdate.vitalSigns
+        );
+        }
         const tReorden = performance.now() - t1;
 
         // 3. Extracción del Más Grave
