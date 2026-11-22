@@ -10,6 +10,12 @@ import type {
 import { MaxHeap } from '../structures/MaxHeap';
 import { LinkedList } from '../structures/LinkedList';
 import { calculatePriorityScore } from '../utils/esiCalculator';
+import { sequentialSearch } from '../algorithms/searching';
+import {
+  mergeSortPatients,
+  quickSortPatients,
+  type PatientComparator,
+} from '../algorithms/sorting';
 
 /**
  * Gestiona la cola de triaje, la atención de pacientes y el historial.
@@ -185,6 +191,64 @@ export function useTriageSystem() {
     setAlerts([]);
   }, []);
 
+  /**
+   * Busca un paciente por su identificador (cédula/UUID) en la cola de
+   * espera y en el historial de atendidos.
+   *
+   * Puente entre las estructuras puras y la UI: la cola se consulta con
+   * `sequentialSearch` (O(n), no requiere orden previo porque el array
+   * interno del heap no está linealmente ordenado) y el historial con
+   * `LinkedList.findById` (O(n) sobre la lista enlazada).
+   *
+   * @param id Identificador único del paciente.
+   * @returns El paciente junto con su ubicación (`'waiting'` o
+   * `'attended'`), o `null` si no existe en ninguna de las dos.
+   */
+  const searchPatientById = useCallback((id: string) => {
+    const queue = maxHeapRef.current.toArray();
+    const queueIndex = sequentialSearch(queue, id, (p) => p.id);
+
+    if (queueIndex !== -1) {
+      return { patient: queue[queueIndex], location: 'waiting' as const };
+    }
+
+    const historyEntry = historyListRef.current.findById(id);
+
+    if (historyEntry) {
+      return { patient: historyEntry.patient, location: 'attended' as const };
+    }
+
+    return null;
+  }, []);
+
+  /**
+   * Devuelve una vista ordenada de la cola de espera usando los
+   * algoritmos de ordenamiento multicriterio del proyecto.
+   *
+   * Nota: `waitingQueue` proviene de `MaxHeap.toArray()`, que expone el
+   * array interno del heap (válido como heap, pero no linealmente
+   * ordenado). Esta función produce una copia ordenada sin mutar ni el
+   * heap ni el estado de React.
+   *
+   * @param algorithm Algoritmo a utilizar: `'merge'` (estable, por
+   * defecto) o `'quick'`.
+   * @param compareFn Comparador multicriterio opcional; por defecto se
+   * usa `defaultTriageComparator` de `sorting.ts`.
+   * @returns Arreglo nuevo de pacientes ordenados por prioridad.
+   */
+  const getSortedWaitingQueue = useCallback(
+    (
+      algorithm: 'merge' | 'quick' = 'merge',
+      compareFn?: PatientComparator
+    ): Patient[] => {
+      const queue = maxHeapRef.current.toArray();
+      return algorithm === 'merge'
+        ? mergeSortPatients(queue, compareFn)
+        : quickSortPatients(queue, compareFn);
+    },
+    []
+  );
+
   return {
     waitingQueue,
     attendedHistory,
@@ -194,5 +258,7 @@ export function useTriageSystem() {
     updatePatientVitals,
     attendNextPatient,
     clearAlerts,
+    searchPatientById,
+    getSortedWaitingQueue,
   };
 }
