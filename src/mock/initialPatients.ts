@@ -246,6 +246,151 @@ export const INITIAL_PATIENTS_DATA: Omit<Patient, 'priorityScore'>[] = [
     arrivalTime: new Date(now.getTime() - 35 * 60000), // Hace 35 min
     lastUpdated: new Date(now.getTime() - 35 * 60000),
   },
+
+  // ------------------------------------------------------------------
+  // Perfiles clínicos adicionales (issue #4 — Ricardo Ochoa).
+  // Cédulas con dígito verificador válido (módulo 10, provincia 11 = Loja).
+  // ------------------------------------------------------------------
+
+  // ----- Pacientes críticos (ESI 1–2) -----
+  {
+    // Sospecha de infarto agudo de miocardio con inestabilidad hemodinámica
+    id: '1105123457',
+    fullName: 'Rosa Elena Pardo',
+    age: 61,
+    esiLevel: 1,
+    vitalSigns: {
+      heartRate: 138,
+      saturation: 86,
+      systolicBP: 78,
+      diastolicBP: 48,
+      temperature: 36.4,
+      respiratoryRate: 30,
+    },
+    arrivalTime: new Date(now.getTime() - 3 * 60000),
+    lastUpdated: new Date(now.getTime() - 3 * 60000),
+  },
+  {
+    // Sepsis de foco urinario (fiebre alta, taquicardia, hipotensión)
+    id: '1103678916',
+    fullName: 'Humberto Salinas',
+    age: 74,
+    esiLevel: 2,
+    vitalSigns: {
+      heartRate: 126,
+      saturation: 90,
+      systolicBP: 84,
+      diastolicBP: 52,
+      temperature: 39.6,
+      respiratoryRate: 27,
+    },
+    arrivalTime: new Date(now.getTime() - 14 * 60000),
+    lastUpdated: new Date(now.getTime() - 14 * 60000),
+  },
+  {
+    // Politraumatismo por accidente de tránsito (shock hipovolémico)
+    id: '1104239874',
+    fullName: 'Fernando Ordóñez',
+    age: 33,
+    esiLevel: 1,
+    vitalSigns: {
+      heartRate: 148,
+      saturation: 88,
+      systolicBP: 68,
+      diastolicBP: 42,
+      temperature: 35.2,
+      respiratoryRate: 34,
+    },
+    arrivalTime: new Date(now.getTime() - 4 * 60000),
+    lastUpdated: new Date(now.getTime() - 4 * 60000),
+  },
+  {
+    // Crisis hipertensiva con cefalea intensa
+    id: '1102987656',
+    fullName: 'Gladys Tapia',
+    age: 69,
+    esiLevel: 2,
+    vitalSigns: {
+      heartRate: 102,
+      saturation: 93,
+      systolicBP: 205,
+      diastolicBP: 118,
+      temperature: 36.8,
+      respiratoryRate: 22,
+    },
+    arrivalTime: new Date(now.getTime() - 20 * 60000),
+    lastUpdated: new Date(now.getTime() - 20 * 60000),
+  },
+
+  // ----- Pacientes estables (ESI 4–5) -----
+  {
+    // Esguince de tobillo sin compromiso vascular
+    id: '1101456323',
+    fullName: 'Bryan Aguirre',
+    age: 17,
+    esiLevel: 5,
+    vitalSigns: {
+      heartRate: 72,
+      saturation: 99,
+      systolicBP: 114,
+      diastolicBP: 72,
+      temperature: 36.5,
+      respiratoryRate: 15,
+    },
+    arrivalTime: new Date(now.getTime() - 55 * 60000),
+    lastUpdated: new Date(now.getTime() - 55 * 60000),
+  },
+  {
+    // Gastroenteritis leve, bien hidratada
+    id: '1105567810',
+    fullName: 'Lucía Maldonado',
+    age: 26,
+    esiLevel: 4,
+    vitalSigns: {
+      heartRate: 84,
+      saturation: 98,
+      systolicBP: 108,
+      diastolicBP: 68,
+      temperature: 37.4,
+      respiratoryRate: 17,
+    },
+    arrivalTime: new Date(now.getTime() - 28 * 60000),
+    lastUpdated: new Date(now.getTime() - 28 * 60000),
+  },
+  {
+    // Lumbalgia mecánica crónica reagudizada
+    id: '1106342106',
+    fullName: 'Segundo Poma',
+    age: 55,
+    esiLevel: 5,
+    vitalSigns: {
+      heartRate: 76,
+      saturation: 97,
+      systolicBP: 128,
+      diastolicBP: 82,
+      temperature: 36.6,
+      respiratoryRate: 16,
+    },
+    arrivalTime: new Date(now.getTime() - 65 * 60000),
+    lastUpdated: new Date(now.getTime() - 65 * 60000),
+  },
+  {
+    // Herida cortante superficial en mano, requiere sutura
+    id: '1107890129',
+    fullName: 'Paola Encalada',
+    age: 38,
+    esiLevel: 4,
+    vitalSigns: {
+      heartRate: 82,
+      saturation: 99,
+      systolicBP: 118,
+      diastolicBP: 76,
+      temperature: 36.7,
+      respiratoryRate: 16,
+    },
+    arrivalTime: new Date(now.getTime() - 17 * 60000),
+    lastUpdated: new Date(now.getTime() - 17 * 60000),
+  },
 ];
 
 export function getInitialPatients(): Patient[] {

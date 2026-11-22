@@ -31,3 +31,12 @@ export interface ReorderAlert {
   reason: string;
   timestamp: Date;
 }
+
+/** Datos crudos del formulario de registro de paciente (antes de validar). */
+export interface PatientFormInput {
+  id?: string;
+  fullName?: string;
+  name?: string;
+  age?: number;
+  vitalSigns?: Partial<VitalSigns>;
+}
