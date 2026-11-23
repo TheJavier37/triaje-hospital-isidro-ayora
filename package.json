@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "benchmark:sort": "tsx src/scripts/benchmarkSort.ts"
+    "benchmark:sort": "tsx src/scripts/benchmarkSort.ts",
+    "stress": "tsx src/scripts/stressTest.ts"
   },
   "dependencies": {
     "react": "^19.2.8",
