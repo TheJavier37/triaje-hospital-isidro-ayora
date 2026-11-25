@@ -204,17 +204,8 @@ result.current.getSortedWaitingQueue('quick');  // priorityScore desc
 - `buildIndex` / `findByKey` sobre archivo NDJSON (solo Node.js,
   fuera del flujo del navegador).
 
-### Benchmarking y estrés (Ricardo — #9, pendiente)
-
-- `benchmarkSort.ts`, `benchmarkSearch.ts`, `benchmarkTest.ts`.
-- Carga masiva de pacientes y medición de tiempos O(n log n).
-
-### UI de métricas e informe técnico (Mateo — #11, pendiente)
-
-- Visualización de `averageWaitTimeMinutes` y métricas de ordenamiento.
-- Informe técnico consolidado del Hito 3.
-
----
+### Benchmarking y estrés (Ricardo — #9, mergeado✅)
+`stressTest`
 
 ## Comandos de verificación rápida
 
@@ -225,4 +216,4 @@ npx vitest run   # suite completa de tests
 npm run lint     # eslint
 ```
 
-**Estado al 19/nov/2026:** `tsc -b` limpio · 37/37 tests ✅
+**Estado al 25/nov/2026:** `tsc -b` limpio · 80/80 tests ✅
